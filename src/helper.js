@@ -9,7 +9,7 @@ export const log = (data) => {
   Readable.from([message, '\n']).pipe(process.stdout);
 };
 
-export const getArgs = () => process.argv.slice(3);
+export const getArgs = () => process.argv.slice(2);
 
 export const getUsernameFromArgs = (args) => {
   const keyword = 'username';
@@ -55,7 +55,18 @@ export const operate = new Transform({
         rn(args[0], args[1]);
         break;
       }
-      // case "cp": 
+      case "cp": {
+        cp(args[0], args[1]);
+        break;
+      }
+      case "mv": {
+        mv(args[0], args[1]);
+        break;
+      }
+      case "rm": {
+        rm(args[0]);
+        break;
+      }
     }
 
     callback(null, `${message}\n${generateCWDMessage()}\n`);
@@ -88,6 +99,21 @@ const add = (filename) => {
 const rn = (oldPath, filename) => {
   const newPath = path.join(path.dirname(path.join(oldPath)), filename);
   fs.renameSync(oldPath, newPath);
+};
+
+const cp = (srcPath, destDir) => {
+  const destPath = path.join(destDir, path.basename(srcPath));
+  const readStream = fs.createReadStream(srcPath);
+  const writeStream = fs.createWriteStream(destPath);
+  return readStream.pipe(writeStream);
+};
+
+const mv = (srcPath, destDir) => {
+  cp(srcPath, destDir).on("finish", () => rm(srcPath));
+};
+
+const rm = (path) => {
+  fs.rmSync(path, { recursive: true, force: true });
 };
 
 const getDirFiles = (path) => {
