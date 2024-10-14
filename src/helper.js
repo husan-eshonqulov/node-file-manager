@@ -1,6 +1,7 @@
 import { Readable, Transform } from 'node:stream';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from "node:os";
 import convertToTable from './format.js';
 
 export const log = (data) => {
@@ -67,6 +68,10 @@ export const operate = new Transform({
         rm(args[0]);
         break;
       }
+      case "os": {
+        message = opSys(args[0]);
+        break;
+      }
     }
 
     callback(null, `${message}\n${generateCWDMessage()}\n`);
@@ -115,6 +120,20 @@ const mv = (srcPath, destDir) => {
 const rm = (path) => {
   fs.rmSync(path, { recursive: true, force: true });
 };
+
+const opSys = (arg) => {
+  switch (arg) {
+    case "--EOL": return os.EOL;
+    case "--cpus": return JSON.stringify(os.cpus(), null, 2);
+    case "--homedir": return os.homedir();
+    case "--username": return os.hostname();
+    case "--architecture": return os.arch();
+  }
+}
+
+const hashFile = (filePath) => {
+  
+}
 
 const getDirFiles = (path) => {
   return fs.readdirSync(path, { withFileTypes: true }).map((file) => ({
